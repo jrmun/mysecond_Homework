@@ -36,25 +36,34 @@ router.post("/posts/:postId/comment", async (req, res) => {
 
 router.put("/posts/:cmtId/comment/", async (req, res) => {
   const { cmtId } = req.params;
-  const { cmtName, cmtSubstance } = req.body;
+  const { cmtName, cmtSubstance, password } = req.body;
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
+  console.log(existscomment);
   if (existscomment.length) {
-    await comment.updateOne(
-      { cmtId: Number(cmtId) },
-      { $set: { cmtName, cmtSubstance } }
-    );
+    if (existscomment[0].cmtpassword === password) {
+      await comment.updateOne(
+        { cmtId: Number(cmtId) },
+        { $set: { cmtName, cmtSubstance } }
+      );
+      res.json({ success: true });
+    } else {
+      res.json({ success: false, errorMessage: "비밀번호 오류" });
+    }
   }
-
-  res.json({ success: true });
 });
 
 router.delete("/posts/:cmtId/comment", async (req, res) => {
   const { cmtId } = req.params;
+  const { password } = req.body;
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
   if (existscomment.length > 0) {
-    await comment.deleteOne({ cmtId });
+    if (existscomment[0].cmtpassword === password) {
+      await comment.deleteOne({ cmtId });
+      res.json({ result: "success" });
+    } else {
+      res.json({ result: "false", errorMessage: "비밀번호 오류" });
+    }
   }
-  res.json({ result: "success" });
 });
 
 module.exports = router;
