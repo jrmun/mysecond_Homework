@@ -31,4 +31,19 @@ router.post("/posts", async (req, res) => {
   res.json({ posts: createdPost });
 });
 
+router.put("/posts/:postId", async (req, res) => {
+  const { postId } = req.params;
+  const { postTitle, name, password, postContent } = req.body;
+
+  const existsPosts = await posts.find({ postId: Number(postId) });
+  if (existsPosts.length) {
+    await posts.updateOne(
+      { postId: Number(postId) },
+      { $set: { postTitle, name, password, postContent } }
+    );
+  }
+
+  res.json({ success: true });
+});
+
 module.exports = router;
