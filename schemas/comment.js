@@ -20,7 +20,6 @@ const commentSchemas = new mongoose.Schema({
   },
   cmtSubstance: {
     type: String,
-    required: true,
   },
 });
 
