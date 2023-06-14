@@ -22,30 +22,39 @@ router.post("/posts/:postId/comment", async (req, res) => {
     return res
       .status(400)
       .json({ success: false, errorMessage: "이미 존재하는 commentId입니다." });
+  } else {
+    if (cmtSubstance.length !== 0) {
+      const createdcomment = await comment.create({
+        cmtId,
+        postId,
+        cmtName,
+        cmtpassword,
+        cmtSubstance,
+      });
+      res.json({ posts: createdcomment });
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, errorMessage: "내용을 입력해주세요." });
+    }
   }
-  const createdcomment = await comment.create({
-    cmtId,
-    postId,
-    cmtName,
-    cmtpassword,
-    cmtSubstance,
-  });
-
-  res.json({ posts: createdcomment });
 });
 
 router.put("/posts/:cmtId/comment/", async (req, res) => {
   const { cmtId } = req.params;
-  const { cmtName, cmtSubstance, password } = req.body;
+  const { cmtSubstance, password } = req.body;
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
-  console.log(existscomment);
   if (existscomment.length) {
     if (existscomment[0].cmtpassword === password) {
-      await comment.updateOne(
-        { cmtId: Number(cmtId) },
-        { $set: { cmtName, cmtSubstance } }
-      );
-      res.json({ success: true });
+      if (cmtSubstance.length !== 0) {
+        await comment.updateOne(
+          { cmtId: Number(cmtId) },
+          { $set: { cmtSubstance } }
+        );
+        res.json({ success: true });
+      } else {
+        res.json({ success: false, errorMessage: "내용을 입력해주세요." });
+      }
     } else {
       res.json({ success: false, errorMessage: "비밀번호 오류" });
     }
