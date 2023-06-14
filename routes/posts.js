@@ -34,25 +34,32 @@ router.post("/posts", async (req, res) => {
 router.put("/posts/:postId", async (req, res) => {
   const { postId } = req.params;
   const { postTitle, name, password, postContent } = req.body;
-
   const existsPosts = await posts.find({ postId: Number(postId) });
   if (existsPosts.length) {
-    await posts.updateOne(
-      { postId: Number(postId) },
-      { $set: { postTitle, name, password, postContent } }
-    );
+    if (existsPosts[0].password === password) {
+      await posts.updateOne(
+        { postId: Number(postId) },
+        { $set: { postTitle, name, postContent } }
+      );
+      res.json({ success: true });
+    } else {
+      res.json({ success: false, errorMessage: "비밀번호 오류" });
+    }
   }
-
-  res.json({ success: true });
 });
 
 router.delete("/posts/:postId", async (req, res) => {
   const { postId } = req.params;
+  const { password } = req.body;
   const existsPosts = await posts.find({ postId: Number(postId) });
   if (existsPosts.length > 0) {
-    await posts.deleteOne({ postId });
+    if (existsPosts[0].password === password) {
+      await posts.deleteOne({ postId });
+      res.json({ result: "success" });
+    }
+  } else {
+    res.json({ result: "false", errorMessage: "비밀번호 오류" });
   }
-  res.json({ result: "success" });
 });
 
 module.exports = router;
