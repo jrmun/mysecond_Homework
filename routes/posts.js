@@ -46,4 +46,13 @@ router.put("/posts/:postId", async (req, res) => {
   res.json({ success: true });
 });
 
+router.delete("/posts/:postId", async (req, res) => {
+  const { postId } = req.params;
+  const existsPosts = await posts.find({ postId: Number(postId) });
+  if (existsPosts.length > 0) {
+    await posts.deleteOne({ postId });
+  }
+  res.json({ result: "success" });
+});
+
 module.exports = router;
