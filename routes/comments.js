@@ -7,6 +7,16 @@ router.get("/posts/:postId/comment", async (req, res) => {
   const { postId } = req.params;
   try {
     const commentList = await comment.find({ postId: postId });
+    commentList.sort(function (comp1, comp2) {
+      let comp1date = comp1.cmtDate;
+      let comp2date = comp2.cmtDate;
+      if (comp1date > comp2date) {
+        return -1;
+      } else if (comp1date < comp2date) {
+        return 1;
+      }
+      return 0;
+    });
     res.status(200).json({ delail: commentList });
   } catch (err) {
     console.error(err);
@@ -15,8 +25,9 @@ router.get("/posts/:postId/comment", async (req, res) => {
 
 router.post("/posts/:postId/comment", async (req, res) => {
   const { postId } = req.params;
-  let { cmtId, cmtName, cmtpassword, cmtSubstance } = req.body;
+  let { cmtId, cmtName, password, cmtSubstance } = req.body;
   cmtId = String(postId) + String(cmtId);
+  const cmtDate = new Date();
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
   if (existscomment.length) {
     return res
@@ -28,8 +39,9 @@ router.post("/posts/:postId/comment", async (req, res) => {
         cmtId,
         postId,
         cmtName,
-        cmtpassword,
+        password,
         cmtSubstance,
+        cmtDate,
       });
       res.json({ posts: createdcomment });
     } else {
@@ -45,7 +57,7 @@ router.put("/posts/:cmtId/comment/", async (req, res) => {
   const { cmtSubstance, password } = req.body;
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
   if (existscomment.length) {
-    if (existscomment[0].cmtpassword === password) {
+    if (existscomment[0].password === password) {
       if (cmtSubstance.length !== 0) {
         await comment.updateOne(
           { cmtId: Number(cmtId) },
@@ -66,7 +78,7 @@ router.delete("/posts/:cmtId/comment", async (req, res) => {
   const { password } = req.body;
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
   if (existscomment.length > 0) {
-    if (existscomment[0].cmtpassword === password) {
+    if (existscomment[0].password === password) {
       await comment.deleteOne({ cmtId });
       res.json({ result: "success" });
     } else {
