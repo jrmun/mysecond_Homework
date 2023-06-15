@@ -6,6 +6,16 @@ router.get("/posts/:postId", async (req, res) => {
   const { postId } = req.params;
   try {
     const postList = await posts.find({ postId: postId });
+    postList.sort(function (comp1, comp2) {
+      let comp1date = comp1.date;
+      let comp2date = comp2.date;
+      if (comp1date > comp2date) {
+        return -1;
+      } else if (comp1date < comp2date) {
+        return 1;
+      }
+      return 0;
+    });
     res.status(200).json({ delail: postList });
   } catch (err) {
     console.error(err);
@@ -14,6 +24,7 @@ router.get("/posts/:postId", async (req, res) => {
 
 router.post("/posts", async (req, res) => {
   const { postId, postTitle, name, password, postContent } = req.body;
+  const date = new Date();
   const existsPost = await posts.find({ postId: Number(postId) });
   if (existsPost.length) {
     return res
@@ -26,6 +37,7 @@ router.post("/posts", async (req, res) => {
     name,
     password,
     postContent,
+    date,
   });
 
   res.json({ posts: createdPost });

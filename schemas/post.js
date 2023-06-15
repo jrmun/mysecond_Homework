@@ -22,6 +22,9 @@ const postsSchemas = new mongoose.Schema({
     type: String,
     required: true,
   },
+  date: {
+    type: Date,
+  },
 });
 
 module.exports = mongoose.model("posts", postsSchemas);

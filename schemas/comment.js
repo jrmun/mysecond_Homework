@@ -14,12 +14,15 @@ const commentSchemas = new mongoose.Schema({
     type: String,
     required: true,
   },
-  cmtpassword: {
+  password: {
     type: Number,
     required: true,
   },
   cmtSubstance: {
     type: String,
+  },
+  cmtDate: {
+    type: Date,
   },
 });
 
