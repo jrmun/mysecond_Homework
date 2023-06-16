@@ -28,7 +28,7 @@ router.get("/posts/:postId/comment", async (req, res) => {
 
 router.post("/posts/:postId/comment", async (req, res) => {
   const { postId } = req.params;
-  let { cmtId, cmtName, password: pas, cmtSubstance } = req.body;
+  const { cmtId, cmtName, password: pas, cmtSubstance } = req.body;
   cmtId = String(postId) + String(cmtId);
   const cmtDate = new Date();
 
