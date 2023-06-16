@@ -1,7 +1,10 @@
 const express = require("express");
+const crypto = require("crypto");
 const router = express.Router();
 const posts = require("../schemas/post.js");
 const comment = require("../schemas/comment.js");
+
+const salt = crypto.randomBytes(32).toString("base64");
 
 router.get("/posts/:postId/comment", async (req, res) => {
   const { postId } = req.params;
@@ -25,9 +28,14 @@ router.get("/posts/:postId/comment", async (req, res) => {
 
 router.post("/posts/:postId/comment", async (req, res) => {
   const { postId } = req.params;
-  let { cmtId, cmtName, password, cmtSubstance } = req.body;
+  let { cmtId, cmtName, password: pas, cmtSubstance } = req.body;
   cmtId = String(postId) + String(cmtId);
   const cmtDate = new Date();
+
+  const password = crypto
+    .pbkdf2Sync(pas, salt, 1, 32, "sha512")
+    .toString("base64");
+
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
   if (existscomment.length) {
     return res
@@ -54,7 +62,10 @@ router.post("/posts/:postId/comment", async (req, res) => {
 
 router.put("/posts/:cmtId/comment/", async (req, res) => {
   const { cmtId } = req.params;
-  const { cmtSubstance, password } = req.body;
+  const { cmtSubstance, password: pas } = req.body;
+  const password = crypto
+    .pbkdf2Sync(pas, salt, 1, 32, "sha512")
+    .toString("base64");
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
   if (existscomment.length) {
     if (existscomment[0].password === password) {
@@ -75,7 +86,12 @@ router.put("/posts/:cmtId/comment/", async (req, res) => {
 
 router.delete("/posts/:cmtId/comment", async (req, res) => {
   const { cmtId } = req.params;
-  const { password } = req.body;
+  const { password: pas } = req.body;
+
+  const password = crypto
+    .pbkdf2Sync(pas, salt, 1, 32, "sha512")
+    .toString("base64");
+
   const existscomment = await comment.find({ cmtId: Number(cmtId) });
   if (existscomment.length > 0) {
     if (existscomment[0].password === password) {
