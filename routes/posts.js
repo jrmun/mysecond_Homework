@@ -1,7 +1,9 @@
-import crypto from "crypto";
 const express = require("express");
+const crypto = require("crypto");
 const router = express.Router();
 const posts = require("../schemas/post.js");
+
+const salt = crypto.randomBytes(32).toString("base64");
 
 router.get("/posts/:postId", async (req, res) => {
   const { postId } = req.params;
@@ -24,11 +26,13 @@ router.get("/posts/:postId", async (req, res) => {
 });
 
 router.post("/posts", async (req, res) => {
-  const { postId, postTitle, name, password, postContent } = req.body;
+  const { postId, postTitle, name, password: pas, postContent } = req.body;
+
+  const password = crypto
+    .pbkdf2Sync(pas, salt, 1, 32, "sha512")
+    .toString("base64");
+
   const date = new Date();
-  const createPassword = (password) => {
-    return crypto.createHash("sha512").update(password).digest("base64");
-  };
   const existsPost = await posts.find({ postId: Number(postId) });
   if (existsPost.length) {
     return res
@@ -49,7 +53,12 @@ router.post("/posts", async (req, res) => {
 
 router.put("/posts/:postId", async (req, res) => {
   const { postId } = req.params;
-  const { postTitle, name, password, postContent } = req.body;
+  const { postTitle, name, password: pas, postContent } = req.body;
+
+  const password = crypto
+    .pbkdf2Sync(pas, salt, 1, 32, "sha512")
+    .toString("base64");
+
   const existsPosts = await posts.find({ postId: Number(postId) });
   if (existsPosts.length) {
     if (existsPosts[0].password === password) {
@@ -66,7 +75,12 @@ router.put("/posts/:postId", async (req, res) => {
 
 router.delete("/posts/:postId", async (req, res) => {
   const { postId } = req.params;
-  const { password } = req.body;
+  const { password: pas } = req.body;
+
+  const password = crypto
+    .pbkdf2Sync(pas, salt, 1, 32, "sha512")
+    .toString("base64");
+
   const existsPosts = await posts.find({ postId: Number(postId) });
   if (existsPosts.length > 0) {
     if (existsPosts[0].password === password) {
