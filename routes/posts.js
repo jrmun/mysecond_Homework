@@ -1,3 +1,4 @@
+import crypto from "crypto";
 const express = require("express");
 const router = express.Router();
 const posts = require("../schemas/post.js");
@@ -25,6 +26,9 @@ router.get("/posts/:postId", async (req, res) => {
 router.post("/posts", async (req, res) => {
   const { postId, postTitle, name, password, postContent } = req.body;
   const date = new Date();
+  const createPassword = (password) => {
+    return crypto.createHash("sha512").update(password).digest("base64");
+  };
   const existsPost = await posts.find({ postId: Number(postId) });
   if (existsPost.length) {
     return res
